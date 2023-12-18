@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipe Recommender</title>
+    <script>
+        function submitIngredients() {
+            var ingredients = document.getElementById('ingredients').value;
+            fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ingredients: ingredients })
+            })
+            .then(response => response.json())
+            .then(data => {
+                var resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+                
+                // Create and append elements for each recipe
+                data.forEach(function(recipe) {
+                    var recipeDiv = document.createElement('div');
+                    recipeDiv.classList.add('recipe');
+                    
+                    var title = document.createElement('h2');
+                    title.textContent = recipe.Title;
+                    recipeDiv.appendChild(title);
+                    
+                    // Check if Ingredients is a string and split it if necessary
+                    var ingredientsList = document.createElement('ul');
+                    var ingredientsArray = Array.isArray(recipe.Ingredients) ? recipe.Ingredients : recipe.Ingredients.split(', '); // Adjust the delimiter if necessary
+                    ingredientsArray.forEach(function(ingredient) {
+                        var li = document.createElement('li');
+                        li.textContent = ingredient;
+                        ingredientsList.appendChild(li);
+                    });
+                    recipeDiv.appendChild(ingredientsList);
+                    
+                    var instructions = document.createElement('p');
+                    instructions.textContent = recipe.Instructions;
+                    recipeDiv.appendChild(instructions);
+                    
+                    resultsDiv.appendChild(recipeDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                var resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = 'Failed to load recipes.';
+            });
+            return false; // To prevent the default form submission
+        }
+    </script>
+    <style>
+        .recipe {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Recipe Recommender</h1>
+    <p>Enter ingredients separated by commas:</p>
+    <form onsubmit="return submitIngredients()">
+        <input type="text" id="ingredients" name="ingredients" placeholder="E.g., tomato, onion, cheese">
+        <input type="submit" value="Recommend Recipes">
+    </form>
+    <br/>
+    <div id="results">
+        <!-- Recipe results will go here -->
+    </div>
+</body>
+</html>
